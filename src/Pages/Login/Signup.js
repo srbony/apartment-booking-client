@@ -1,9 +1,64 @@
 import React from 'react'
+import { useContext } from 'react';
+import { toast } from 'react-hot-toast';
 
 import { Link } from 'react-router-dom'
-import PrimaryButton from '../../Components/Button/PrimaryButton'
+import PrimaryButton from '../../Components/Button/PrimaryButton';
+import { AuthContext } from '../../contexts/AuthProvider';
+
+
+
+
 
 const Signup = () => {
+  const { createUser, updateUserProfile, verifyEmail } = useContext(AuthContext)
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    const form = event.target;
+    const name = form.name.value;
+    const image = form.image.files[0];
+    const email = form.email.value;
+    const password = form.password.value;
+
+    //image upload to imgbb
+    const formData = new FormData();
+    formData.append('image', image);
+    const url = `https://api.imgbb.com/1/upload?key=87c47e4a9562b277d4d4cdd9c60b2681`;
+    fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        // console.log(data.data.display_url);
+        createUser(email, password)
+          .then(result => {
+            updateUserProfile(name, data.data.display_url)
+              .then(
+                verifyEmail()
+                  .then(() => {
+                    toast.success('Please check your email for verification')
+                  })
+              )
+              .catch(err => console.log(err))
+
+            // console.log(user)
+
+          })
+
+          .catch(error => console.log(error))
+      })
+      .catch(err => console.log(err))
+
+
+
+    // console.log(name, image, email, password)
+
+
+  }
+
+
   return (
     <div className='flex justify-center items-center pt-8'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -12,6 +67,7 @@ const Signup = () => {
           <p className='text-sm text-gray-400'>Create a new account</p>
         </div>
         <form
+          onSubmit={handleSubmit}
           noValidate=''
           action=''
           className='space-y-12 ng-untouched ng-pristine ng-valid'
@@ -25,7 +81,7 @@ const Signup = () => {
                 type='text'
                 name='name'
                 id='name'
-                required
+                // required
                 placeholder='Enter Your Name Here'
                 className='w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-green-500 bg-gray-200 text-gray-900'
                 data-temp-mail-org='0'
@@ -40,7 +96,7 @@ const Signup = () => {
                 id='image'
                 name='image'
                 accept='image/*'
-                required
+              // required
               />
             </div>
             <div>
@@ -48,7 +104,7 @@ const Signup = () => {
                 Email address
               </label>
               <input
-                required
+                // required
                 type='email'
                 name='email'
                 id='email'
@@ -67,7 +123,7 @@ const Signup = () => {
                 type='password'
                 name='password'
                 id='password'
-                required
+                // required
                 placeholder='*******'
                 className='w-full px-3 py-2 border rounded-md border-gray-300 bg-gray-200 focus:outline-green-500 text-gray-900'
               />
